@@ -80,7 +80,7 @@ public class OdometerService extends Service {
     }
 
     public double getDistance() {
-        return this.distanceInMeters / 1000;
+        return this.distanceInMeters;
     }
 
     @Override

@@ -1,11 +1,14 @@
 package com.hfad.odometer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private OdometerService odometer;
     private boolean bound = false;
+    private final int PERMISSION_REQUEST_CODE = 698;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -43,8 +47,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, OdometerService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        if (ContextCompat.checkSelfPermission(this, OdometerService.PERMISSION_STRING)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{OdometerService.PERMISSION_STRING},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            Intent intent = new Intent(this, OdometerService.class);
+            bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
@@ -67,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     distance = odometer.getDistance();
                 }
                 String distanceStr = String.format(Locale.getDefault(),
-                        "%1$,.2f km", distance);
+                        "%1$,.2f meters", distance);
                 distanceView.setText(distanceStr);
                 handler.postDelayed(this, 1000);
             }
